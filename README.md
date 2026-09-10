@@ -219,6 +219,18 @@ Scraped from `GET {$JELLYFIN.URL}/Sessions` and `/Sessions?activeWithinSeconds=3
 | **Sessions Transcoding** | `jellyfin.sessions.transcode` | `JAVASCRIPT` (filter `PlayMethod === "Transcode"`) | Streams requiring server-side transcoding. |
 | **Sessions Direct Playing** | `jellyfin.sessions.direct_play` | `JAVASCRIPT` (filter `PlayMethod === "DirectPlay"`) | Streams playing directly without transcode. |
 
+#### Transcoding & Acceleration Telemetry
+Extracted from `jellyfin.sessions.playing.raw` to monitor transcoding performance and hardware acceleration:
+
+| Item Name | Key | Type | Description |
+|---|---|---|---|
+| **Transcode Average Framerate** | `jellyfin.transcode.framerate` | Float (`fps`) | Average encoding speed in FPS across active video transcodes. Returns `0` if idle. |
+| **Transcode Hardware Accelerated Streams** | `jellyfin.transcode.hardware` | Unsigned | Count of active streams accelerated via GPU hardware (VA-API, QSV, NVENC). |
+| **Transcode Software (CPU Fallback) Streams**| `jellyfin.transcode.software` | Unsigned | Count of active streams transcoding on CPU without hardware acceleration. |
+| **Sessions Video Direct Stream** | `jellyfin.transcode.video_direct` | Unsigned | Streams where video is direct-streamed and only audio or container is remuxed/transcoded. |
+| **Transcode Video Total Bitrate** | `jellyfin.transcode.bitrate` | Unsigned (`bps`) | Aggregate bitrate of active video transcoding streams. |
+| **Transcode Active Reasons** | `jellyfin.transcode.reasons` | Character | Comma-separated summary of active reasons triggering transcoding (e.g., `ContainerNotSupported`). |
+
 #### Media Library Inventory
 Scraped every 6 hours from `GET {$JELLYFIN.URL}/Items/Counts`:
 
@@ -324,6 +336,7 @@ docker exec zbx-proxy zabbix_proxy -R config_cache_reload
 | `{$JELLYFIN.CPU.HIGH}` | `90` (%) | CPU usage HIGH threshold. |
 | `{$JELLYFIN.SESSIONS.WARN}` | `10` | Active session count threshold for INFO notification. |
 | `{$JELLYFIN.TRANSCODE.WARN}`| `3` | Active transcode streams threshold for WARNING notification. |
+| `{$JELLYFIN.TRANSCODE.FPS.MIN}` | `24` | Minimum acceptable transcode encoding framerate (FPS) before raising an alert. |
 
 ### 8.2 Master Items & Polling Intervals
 
@@ -351,13 +364,12 @@ docker exec zbx-proxy zabbix_proxy -R config_cache_reload
 | **WARNING** | **ThreadPool queue backlog** | `min(/Jellyfin by HTTP/jellyfin.threadpool.queue_length,15m)>50` | .NET ThreadPool has >50 work items queued sustained for 15 minutes. The CPU is saturated with background tasks. |
 | **WARNING** | **Kestrel request queue backlog** | `min(/Jellyfin by HTTP/jellyfin.kestrel.request_queue_length,15m)>10` | Incoming HTTP requests are queuing in Kestrel sustained for 15 minutes, indicating delayed request handling. |
 | **WARNING** | **High concurrent transcode load** | `min(/Jellyfin by HTTP/jellyfin.sessions.transcode,15m)>{$JELLYFIN.TRANSCODE.WARN}` | More than 3 concurrent transcode sessions active sustained for 15 minutes. Verify if hardware acceleration (VA-API / NVENC / QuickSync) is working properly. |
+| **WARNING** | **Jellyfin Transcode Framerate is too low (<{$JELLYFIN.TRANSCODE.FPS.MIN} FPS)** | `min(/Jellyfin by HTTP/jellyfin.transcode.framerate,15m)<{$JELLYFIN.TRANSCODE.FPS.MIN} and min(/Jellyfin by HTTP/jellyfin.sessions.transcode,15m)>0 and min(/Jellyfin by HTTP/jellyfin.transcode.framerate,15m)>0` | Transcoding framerate dropped below 24 FPS for 15 minutes while transcode is active. Clients are likely experiencing stuttering or buffering. |
+| **WARNING** | **Jellyfin Transcode running without hardware acceleration (CPU Fallback)** | `min(/Jellyfin by HTTP/jellyfin.transcode.software,15m)>0` | One or more streams are currently transcoding on CPU software instead of using GPU hardware acceleration. Check GPU driver and Jellyfin hardware acceleration settings. |
 | **INFO** | **Jellyfin version changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.version)<>last(/Jellyfin by HTTP/jellyfin.version,#2)` | Jellyfin was updated to a new version. |
 | **INFO** | **High active session count** | `min(/Jellyfin by HTTP/jellyfin.sessions.count,15m)>{$JELLYFIN.SESSIONS.WARN}` | More than 10 client sessions are connected simultaneously sustained for 15 minutes. |
 | **INFO** | **Library movie count changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.library.movies)<>last(#2)` | A movie was added or removed from the library. |
 | **INFO** | **Library series count changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.library.series)<>last(#2)` | A TV series was added or removed from the library. |
-
----
-
 
 ---
 
@@ -367,6 +379,7 @@ A production-ready Grafana dashboard is included under [`grafana/jellyfin_media_
 
 ### Dashboard Highlights:
 * **Executive Overview & Playback:** Real-time health badge, version, active sessions, and direct play vs. transcode ratio.
+* **Transcoding & GPU Acceleration Telemetry:** Real-time encoding framerate gauge (FPS), hardware (VA-API/NVENC/QSV) vs. CPU software fallback stream comparison, aggregate transcode bitrate, transcode reasons, and complete history.
 * **Media Library Inventory:** Live counters for movies, TV series, episodes, songs, albums, and music videos.
 * **System Resources:** CPU usage & working set memory gauges and dual-axis history.
 * **.NET Runtime & Garbage Collection:** GC pause ratio, heap fragmentation, Gen 0/1/2/LOH breakdown, and collection counts.

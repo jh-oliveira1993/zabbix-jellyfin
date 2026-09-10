@@ -799,6 +799,95 @@ zabbix_export:
                 - ''
           master_item:
             key: jellyfin.metrics.raw
+        - uuid: 884b8e81cfd4419cb4b5d7ba098f07f9
+          name: 'Transcode Video Total Bitrate'
+          type: DEPENDENT
+          key: jellyfin.transcode.bitrate
+          delay: '0'
+          history: 30d
+          units: bps
+          description: 'Aggregate bitrate of all active transcoding video streams.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),tot=0;for(var i=0;i<s.length;i++){var t=s[i].TranscodingInfo;if(t&&typeof t.Bitrate==="number"){tot+=t.Bitrate;}}return tot;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: 9b5bd9927625437fba1f02d9b6684994
+          name: 'Transcode Average Framerate'
+          type: DEPENDENT
+          key: jellyfin.transcode.framerate
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: fps
+          description: 'Average framerate (FPS) of active video transcoding streams processed by GPU/transcoder. Returns 0 when no transcode is active.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),tot=0,cnt=0;for(var i=0;i<s.length;i++){var t=s[i].TranscodingInfo;if(t&&typeof t.Framerate==="number"&&t.Framerate>0){tot+=t.Framerate;cnt++;}}return cnt>0?Number((tot/cnt).toFixed(1)):0;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: c18ad091271b47f6ba2927274b0e1b68
+          name: 'Transcode Hardware Accelerated Streams'
+          type: DEPENDENT
+          key: jellyfin.transcode.hardware
+          delay: '0'
+          history: 30d
+          description: 'Number of currently active transcode sessions accelerated by GPU hardware (e.g. VA-API, QSV, NVENC).'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),cnt=0;for(var i=0;i<s.length;i++){var t=s[i].TranscodingInfo;if(t&&t.HardwareAccelerationType&&t.HardwareAccelerationType.toString().toLowerCase()!=="none"&&t.HardwareAccelerationType.toString().trim()!==""){cnt++;}}return cnt;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: b0406424e5704ca7a59a7d1a801bf826
+          name: 'Transcode Active Reasons'
+          type: DEPENDENT
+          key: jellyfin.transcode.reasons
+          delay: '0'
+          history: 30d
+          value_type: CHAR
+          trends: '0'
+          description: 'Summary of active transcode reasons across current sessions (e.g. ContainerNotSupported, VideoCodecNotSupported). Returns None if no transcode is active.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),r={};for(var i=0;i<s.length;i++){var t=s[i].TranscodingInfo;if(t&&t.TranscodeReasons&&t.TranscodeReasons.length){for(var j=0;j<t.TranscodeReasons.length;j++){r[t.TranscodeReasons[j]]=true;}}}var k=Object.keys(r);return k.length>0?k.sort().join(", "):"None";'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: fd427372a2ac49bc9a8a28eb5fc088ac
+          name: 'Transcode Software (CPU Fallback) Streams'
+          type: DEPENDENT
+          key: jellyfin.transcode.software
+          delay: '0'
+          history: 30d
+          description: 'Number of currently active transcode sessions running on CPU software without GPU hardware acceleration.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),cnt=0;for(var i=0;i<s.length;i++){if(s[i].PlayState&&s[i].PlayState.PlayMethod==="Transcode"){var t=s[i].TranscodingInfo,hw=t&&t.HardwareAccelerationType;if(!hw||hw.toString().toLowerCase()==="none"||hw.toString().trim()===""){cnt++;}}}return cnt;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+          triggers:
+            - uuid: d36d3422c0c14cf680b3574cfc3ac23d
+              expression: 'min(/Jellyfin by HTTP/jellyfin.transcode.software,15m)>0'
+              name: 'Jellyfin Transcode running without hardware acceleration (CPU Fallback)'
+              priority: WARNING
+              description: 'One or more streams are currently transcoding on CPU software instead of using GPU hardware acceleration. Check GPU driver and Jellyfin hardware acceleration settings.'
+        - uuid: 98fa83b3d9a6470386b3e3fa0cb99fb3
+          name: 'Sessions Video Direct Stream'
+          type: DEPENDENT
+          key: jellyfin.transcode.video_direct
+          delay: '0'
+          history: 30d
+          description: 'Number of active sessions where video is direct-streamed without re-encoding (audio or container only transcoding).'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'var s=JSON.parse(value),cnt=0;for(var i=0;i<s.length;i++){var t=s[i].TranscodingInfo;if(t&&t.IsVideoDirect===true){cnt++;}}return cnt;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
         - uuid: 11f2e2de423140ef804088eaca388d51
           name: 'Server Version'
           type: DEPENDENT
@@ -836,7 +925,15 @@ zabbix_export:
           value: '1073741824'
         - macro: '{$JELLYFIN.SESSIONS.WARN}'
           value: '10'
+        - macro: '{$JELLYFIN.TRANSCODE.FPS.MIN}'
+          value: '24'
         - macro: '{$JELLYFIN.TRANSCODE.WARN}'
           value: '3'
         - macro: '{$JELLYFIN.URL}'
           value: 'http://localhost:8096'
+  triggers:
+    - uuid: b73bcdeb8dfc410aa1834d6de5bc6759
+      expression: 'min(/Jellyfin by HTTP/jellyfin.transcode.framerate,15m)<{$JELLYFIN.TRANSCODE.FPS.MIN} and min(/Jellyfin by HTTP/jellyfin.sessions.transcode,15m)>0 and min(/Jellyfin by HTTP/jellyfin.transcode.framerate,15m)>0'
+      name: 'Jellyfin Transcode Framerate is too low (<{$JELLYFIN.TRANSCODE.FPS.MIN} FPS)'
+      priority: WARNING
+      description: 'Transcoding framerate dropped below {$JELLYFIN.TRANSCODE.FPS.MIN} FPS for 15 minutes while transcode is active. Clients are likely experiencing stuttering or buffering.'
