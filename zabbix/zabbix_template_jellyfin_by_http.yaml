@@ -1,859 +1,842 @@
 zabbix_export:
   version: '7.0'
   template_groups:
-  - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
-    name: Templates/Applications
+    - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
+      name: Templates/Applications
   templates:
-  - uuid: 9523096631dc4452832f433759fb18a2
-    template: Jellyfin by HTTP
-    name: Jellyfin by HTTP
-    groups:
-    - name: Templates/Applications
-    macros:
-    - macro: '{$JELLYFIN.URL}'
-      value: http://localhost:8096
-    - macro: '{$JELLYFIN.API.KEY}'
-      value: ''
-    - macro: '{$JELLYFIN.MEM.WARN}'
-      value: '1073741824'
-    - macro: '{$JELLYFIN.MEM.HIGH}'
-      value: '2147483648'
-    - macro: '{$JELLYFIN.CPU.WARN}'
-      value: '70'
-    - macro: '{$JELLYFIN.CPU.HIGH}'
-      value: '90'
-    - macro: '{$JELLYFIN.SESSIONS.WARN}'
-      value: '10'
-    - macro: '{$JELLYFIN.TRANSCODE.WARN}'
-      value: '3'
-    - macro: '{$JELLYFIN.HEALTH.INTERVAL}'
-      value: 1m
-    - macro: '{$JELLYFIN.LIBRARY.INTERVAL}'
-      value: 6h
-    items:
-    - uuid: cbda46a795e0470dbf267d5d67fc880f
-      name: Raw Health Check Response
-      type: HTTP_AGENT
-      key: jellyfin.health.raw
-      delay: '{$JELLYFIN.HEALTH.INTERVAL}'
-      history: 7d
-      value_type: CHAR
-      trends: '0'
-      url: '{$JELLYFIN.URL}/health'
-      description: Raw health check response from Jellyfin /health endpoint.
-    - uuid: 8af7a479fbf94e2bbaa4577251be73e5
-      name: Server Health Status
-      type: DEPENDENT
-      key: jellyfin.health
-      delay: '0'
-      history: 7d
-      value_type: CHAR
-      trends: '0'
-      description: Parsed health check status.
-      preprocessing:
-      - type: REGEX
-        parameters:
-        - ^(\S+)
-        - \1
-      master_item:
-        key: jellyfin.health.raw
-      triggers:
-      - uuid: 26662a00592f4fe387dd01866e569de7
-        expression: last(/Jellyfin by HTTP/jellyfin.health)<>"Healthy"
-        name: Jellyfin Server Unhealthy
-        priority: DISASTER
-        description: The /health endpoint returned a non-Healthy status.
-    - uuid: 3792ba19866f4e07a76c96dc4b49c839
-      name: Raw System Info (Public)
-      type: HTTP_AGENT
-      key: jellyfin.sysinfo.raw
-      delay: 15m
-      history: 7d
-      value_type: CHAR
-      trends: '0'
-      url: '{$JELLYFIN.URL}/System/Info/Public'
-      description: Raw public system info.
-    - uuid: 11f2e2de423140ef804088eaca388d51
-      name: Server Version
-      type: DEPENDENT
-      key: jellyfin.version
-      delay: '0'
-      history: 90d
-      value_type: CHAR
-      trends: '0'
-      description: Jellyfin Server Version.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.Version
-      master_item:
-        key: jellyfin.sysinfo.raw
-      triggers:
-      - uuid: 07cc66967f6b484880198f2345495878
-        expression: last(/Jellyfin by HTTP/jellyfin.version)<>last(/Jellyfin by HTTP/jellyfin.version,#2) and length(last(/Jellyfin by HTTP/jellyfin.version))>0
-        name: Jellyfin version changed to {ITEM.VALUE}
-        priority: INFO
-        description: Jellyfin version has changed.
-    - uuid: 745f75eb1454485089c31696eec53b95
-      name: Server Name
-      type: DEPENDENT
-      key: jellyfin.server.name
-      delay: '0'
-      history: 90d
-      value_type: CHAR
-      trends: '0'
-      description: Jellyfin Server Name.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.ServerName
-      master_item:
-        key: jellyfin.sysinfo.raw
-    - uuid: bba0731fa8e146d5bb026155aa6814df
-      name: Server ID
-      type: DEPENDENT
-      key: jellyfin.server.id
-      delay: '0'
-      history: 90d
-      value_type: CHAR
-      trends: '0'
-      description: Jellyfin Server ID.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.Id
-      master_item:
-        key: jellyfin.sysinfo.raw
-    - uuid: b71e1668885947db8ddc0467ceec3cc7
-      name: Product Name
-      type: DEPENDENT
-      key: jellyfin.product
-      delay: '0'
-      history: 90d
-      value_type: CHAR
-      trends: '0'
-      description: Jellyfin Product Name.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.ProductName
-      master_item:
-        key: jellyfin.sysinfo.raw
-    - uuid: c9701839562842fc9ae2c34ade6a5c84
-      name: Raw Prometheus Metrics
-      type: HTTP_AGENT
-      key: jellyfin.metrics.raw
-      delay: '{$JELLYFIN.HEALTH.INTERVAL}'
-      history: '0'
-      value_type: TEXT
-      trends: '0'
-      url: '{$JELLYFIN.URL}/metrics'
-      description: Raw prometheus metrics from /metrics endpoint.
-    - uuid: 0bd1d928702f42a78e436c7f395ae214
-      name: Process Working Set Memory
-      type: DEPENDENT
-      key: jellyfin.process.working_set
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: Process Working Set Memory.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - process_working_set_bytes
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-      triggers:
-      - uuid: 0c690c0f31024107a65889f86fa40c28
-        expression: min(/Jellyfin by HTTP/jellyfin.process.working_set,5m)>{$JELLYFIN.MEM.HIGH}
-        name: Jellyfin Server Memory Usage is HIGH
-        priority: HIGH
-        description: Memory usage exceeded high threshold.
-      - uuid: c208366aac3646ce81690de2ebcd4aed
-        expression: min(/Jellyfin by HTTP/jellyfin.process.working_set,5m)>{$JELLYFIN.MEM.WARN}
-        name: Jellyfin Server Memory Usage is WARNING
-        priority: WARNING
-        description: Memory usage exceeded warning threshold.
-        dependencies:
-        - name: Jellyfin Server Memory Usage is HIGH
-          expression: min(/Jellyfin by HTTP/jellyfin.process.working_set,5m)>{$JELLYFIN.MEM.HIGH}
-    - uuid: 8c466104aa3f4d6fb525c6614a482239
-      name: Process CPU Time Total
-      type: DEPENDENT
-      key: jellyfin.process.cpu_seconds_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: s
-      description: Process CPU Time Total.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - process_cpu_seconds_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 61a23670cab44556ac42027a0e89d2c2
-      name: Process CPU Usage
-      type: DEPENDENT
-      key: jellyfin.process.cpu_usage
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: '%'
-      description: Process CPU Usage.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - system_runtime_cpu_usage
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-      triggers:
-      - uuid: cc531bcdb4234285b4c769fd6fdf415e
-        expression: min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,5m)>{$JELLYFIN.CPU.HIGH}
-        name: Jellyfin Server CPU Usage is HIGH
-        priority: HIGH
-        description: CPU usage exceeded high threshold.
-      - uuid: ab9abeae02b747ae897e388fb26c0b3f
-        expression: min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,5m)>{$JELLYFIN.CPU.WARN}
-        name: Jellyfin Server CPU Usage is WARNING
-        priority: WARNING
-        description: CPU usage exceeded warning threshold.
-        dependencies:
-        - name: Jellyfin Server CPU Usage is HIGH
-          expression: min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,5m)>{$JELLYFIN.CPU.HIGH}
-    - uuid: d6f1464275be418dab17a7f43956080d
-      name: Available CPU Cores
-      type: DEPENDENT
-      key: jellyfin.process.cpu_count
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Available CPU Cores.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - process_cpu_count
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 0b737bc20e504271a9fb2bbf13285f8e
-      name: GC Heap Size Gen 0
-      type: DEPENDENT
-      key: jellyfin.gc.heap_gen0
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: GC Heap Size Gen 0.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_heap_size_bytes{gc_generation="0"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 3b239bc6f747441c92124c2927ceb8d8
-      name: GC Heap Size Gen 1
-      type: DEPENDENT
-      key: jellyfin.gc.heap_gen1
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: GC Heap Size Gen 1.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_heap_size_bytes{gc_generation="1"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 01484325d55b4becad04a25a32470ab8
-      name: GC Heap Size Gen 2
-      type: DEPENDENT
-      key: jellyfin.gc.heap_gen2
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: GC Heap Size Gen 2.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_heap_size_bytes{gc_generation="2"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 8840a138c8914dcf9dba9185b6fc0e07
-      name: GC Large Object Heap Size
-      type: DEPENDENT
-      key: jellyfin.gc.heap_loh
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: GC Large Object Heap Size.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_heap_size_bytes{gc_generation="loh"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 762148f93ab54167a3ffd7b14843cf25
-      name: GC Collections Gen 0
-      type: DEPENDENT
-      key: jellyfin.gc.collections_gen0
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: GC Collections Gen 0.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_collection_count_total{gc_generation="0"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: fc9d4f7d6b3b4db7b2fb84fe0dc1559b
-      name: GC Collections Gen 1
-      type: DEPENDENT
-      key: jellyfin.gc.collections_gen1
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: GC Collections Gen 1.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_collection_count_total{gc_generation="1"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 18a8ada457a04b04ba04a32b5ba114fb
-      name: GC Collections Gen 2
-      type: DEPENDENT
-      key: jellyfin.gc.collections_gen2
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: GC Collections Gen 2.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_collection_count_total{gc_generation="2"}
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: f8a8e7619e474cfda59c618ce5dac51a
-      name: GC Pause Ratio
-      type: DEPENDENT
-      key: jellyfin.gc.pause_ratio
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: '%'
-      description: GC Pause Ratio.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_gc_pause_ratio
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: a9cf97cc583f463aa5ce37432cf8969e
-      name: GC Fragmentation
-      type: DEPENDENT
-      key: jellyfin.gc.fragmentation
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: '%'
-      description: GC Fragmentation.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - system_runtime_gc_fragmentation
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 0d45b4894bc94defab4e98c8c3e184cf
-      name: ThreadPool Active Threads
-      type: DEPENDENT
-      key: jellyfin.threadpool.threads
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: ThreadPool Active Threads.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_threadpool_num_threads
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 9c05b6297f404358aa32f8e30fb82a94
-      name: ThreadPool Queue Length
-      type: DEPENDENT
-      key: jellyfin.threadpool.queue_length
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: ThreadPool Queue Length.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_threadpool_queue_length_sum
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-      triggers:
-      - uuid: cf72a5700d9f46e3bf845b8c9d738f3c
-        expression: min(/Jellyfin by HTTP/jellyfin.threadpool.queue_length,5m)>50
-        name: ThreadPool queue backlog
-        priority: WARNING
-        description: ThreadPool queue length has been over 50 for 5 minutes.
-    - uuid: a030ed1d0f584505b80828d5a49950c9
-      name: ThreadPool Completed Work Items
-      type: DEPENDENT
-      key: jellyfin.threadpool.completed_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: ThreadPool Completed Work Items.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_threadpool_throughput_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: a0a48c926a0a4bcbaeb8ad3abb06cae8
-      name: HTTP Active Requests
-      type: DEPENDENT
-      key: jellyfin.http.requests_active
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: HTTP Active Requests.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_hosting_current_requests
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 64e7655097a0459baabc688099a1fa24
-      name: HTTP Failed Requests Total
-      type: DEPENDENT
-      key: jellyfin.http.requests_failed
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: HTTP Failed Requests Total.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_hosting_failed_requests
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-      triggers:
-      - uuid: 1e6ab2f9841e4f42846ace16bcc0b2b0
-        expression: max(/Jellyfin by HTTP/jellyfin.http.requests_failed,5m)-min(/Jellyfin by HTTP/jellyfin.http.requests_failed,5m)>10
-        name: High rate of failed HTTP requests
-        priority: WARNING
-        description: Failed HTTP requests increased by more than 10 in the last 5 minutes.
-    - uuid: 19dddfd8f7b84f4ca38181a115b4c1f7
-      name: HTTP Total Requests
-      type: DEPENDENT
-      key: jellyfin.http.requests_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: HTTP Total Requests.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_hosting_total_requests
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: aa9b0ccaa4e14a8fbeac0f57a02e1882
-      name: HTTP Requests per Second
-      type: DEPENDENT
-      key: jellyfin.http.requests_per_second
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: HTTP Requests per Second.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_hosting_requests_per_second_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 154736c3672a4420aa16d06e9edb5c04
-      name: Kestrel Active Connections
-      type: DEPENDENT
-      key: jellyfin.kestrel.connections_active
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Kestrel Active Connections.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_server_kestrel_current_connections
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: e9d0032569564c329596b921123fb936
-      name: Kestrel Total Connections
-      type: DEPENDENT
-      key: jellyfin.kestrel.connections_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: Kestrel Total Connections.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_server_kestrel_total_connections
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 1595cd7b108344c4a5215e47473e1ef8
-      name: Kestrel Connection Rate
-      type: DEPENDENT
-      key: jellyfin.kestrel.connections_per_second
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: Kestrel Connection Rate.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_server_kestrel_connections_per_second_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 9013ea1c08654489b1ca33491f53f313
-      name: Kestrel Request Queue Length
-      type: DEPENDENT
-      key: jellyfin.kestrel.request_queue_length
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Kestrel Request Queue Length.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - microsoft_aspnetcore_server_kestrel_request_queue_length
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-      triggers:
-      - uuid: d20e3d25b9d343e5b2a25bd78ac284a7
-        expression: min(/Jellyfin by HTTP/jellyfin.kestrel.request_queue_length,3m)>10
-        name: Kestrel request queue backlog
-        priority: WARNING
-        description: Kestrel request queue length has been over 10 for 3 minutes.
-    - uuid: e26a5bde38e84c72b1b36f44d4c82303
-      name: Sockets Outgoing Connections Total
-      type: DEPENDENT
-      key: jellyfin.sockets.outgoing_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: Sockets Outgoing Connections Total.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_sockets_connections_established_outgoing_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: ddfad1f0bf0e4291b17e2cd870c544d2
-      name: Sockets Incoming Connections Total
-      type: DEPENDENT
-      key: jellyfin.sockets.incoming_total
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      description: Sockets Incoming Connections Total.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - dotnet_sockets_connections_established_incoming_total
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 565f48d9cfd84f69a32be662d07bce92
-      name: Network Bytes Received
-      type: DEPENDENT
-      key: jellyfin.sockets.bytes_received
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: Network Bytes Received.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - system_net_sockets_bytes_received
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: a78cebca349245c1ba7bf8a16486c48f
-      name: Network Bytes Sent
-      type: DEPENDENT
-      key: jellyfin.sockets.bytes_sent
-      delay: '0'
-      history: 30d
-      value_type: FLOAT
-      units: B
-      description: Network Bytes Sent.
-      preprocessing:
-      - type: PROMETHEUS_PATTERN
-        parameters:
-        - system_net_sockets_bytes_sent
-        - value
-        - ''
-      master_item:
-        key: jellyfin.metrics.raw
-    - uuid: 50378c38895a469d97169640dbe69379
-      name: Raw Sessions Data
-      type: HTTP_AGENT
-      key: jellyfin.sessions.raw
-      delay: '{$JELLYFIN.HEALTH.INTERVAL}'
-      history: '0'
-      value_type: TEXT
-      trends: '0'
-      url: '{$JELLYFIN.URL}/Sessions'
-      headers:
-      - name: Authorization
-        value: MediaBrowser Token="{$JELLYFIN.API.KEY}"
-      description: Raw sessions JSON data.
-    - uuid: a41580b104f24401a873251dac2a17f0
-      name: Active Sessions Total
-      type: DEPENDENT
-      key: jellyfin.sessions.count
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Active Sessions Total.
-      preprocessing:
-      - type: JAVASCRIPT
-        parameters:
-        - return JSON.parse(value).length;
-      master_item:
-        key: jellyfin.sessions.raw
-      triggers:
-      - uuid: a9ff8655d6744cc3a48f3818c1f3105b
-        expression: min(/Jellyfin by HTTP/jellyfin.sessions.count,5m)>{$JELLYFIN.SESSIONS.WARN}
-        name: High active session count
-        priority: INFO
-        description: Active sessions count is high.
-    - uuid: 4a55f9e492f34518a015e56e1f7146af
-      name: Raw Active Playing Sessions
-      type: HTTP_AGENT
-      key: jellyfin.sessions.playing.raw
-      delay: '{$JELLYFIN.HEALTH.INTERVAL}'
-      history: '0'
-      value_type: TEXT
-      trends: '0'
-      url: '{$JELLYFIN.URL}/Sessions?activeWithinSeconds=30'
-      headers:
-      - name: Authorization
-        value: MediaBrowser Token="{$JELLYFIN.API.KEY}"
-      description: Raw playing sessions JSON data.
-    - uuid: 2b1bfc4bac464f6c9acc3772aee151be
-      name: Sessions Currently Playing
-      type: DEPENDENT
-      key: jellyfin.sessions.playing
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Sessions Currently Playing.
-      preprocessing:
-      - type: JAVASCRIPT
-        parameters:
-        - return JSON.parse(value).filter(function(s){return s.NowPlayingItem!=null;}).length;
-      master_item:
-        key: jellyfin.sessions.playing.raw
-    - uuid: c30dc18dcfa543519390f688d1c4dd56
-      name: Sessions Transcoding
-      type: DEPENDENT
-      key: jellyfin.sessions.transcode
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Sessions Transcoding.
-      preprocessing:
-      - type: JAVASCRIPT
-        parameters:
-        - return JSON.parse(value).filter(function(s){return s.PlayState&&s.PlayState.PlayMethod==="Transcode";}).length;
-      master_item:
-        key: jellyfin.sessions.playing.raw
-      triggers:
-      - uuid: e4127c21106442cba6fa900c3b38239a
-        expression: min(/Jellyfin by HTTP/jellyfin.sessions.transcode,5m)>{$JELLYFIN.TRANSCODE.WARN}
-        name: High concurrent transcode load
-        priority: WARNING
-        description: High number of concurrent transcode sessions.
-    - uuid: 22061bcf624d48b6ab86e14df8f12bfd
-      name: Sessions Direct Playing
-      type: DEPENDENT
-      key: jellyfin.sessions.direct_play
-      delay: '0'
-      history: 30d
-      value_type: UNSIGNED
-      description: Sessions Direct Playing.
-      preprocessing:
-      - type: JAVASCRIPT
-        parameters:
-        - return JSON.parse(value).filter(function(s){return s.PlayState&&s.PlayState.PlayMethod==="DirectPlay";}).length;
-      master_item:
-        key: jellyfin.sessions.playing.raw
-    - uuid: c2e9a435d37e49df9bbce76e0d8a2cce
-      name: Raw Library Item Counts
-      type: HTTP_AGENT
-      key: jellyfin.library.counts.raw
-      delay: '{$JELLYFIN.LIBRARY.INTERVAL}'
-      history: '0'
-      value_type: TEXT
-      trends: '0'
-      url: '{$JELLYFIN.URL}/Items/Counts'
-      headers:
-      - name: Authorization
-        value: MediaBrowser Token="{$JELLYFIN.API.KEY}"
-      description: Raw Library Item Counts JSON data.
-    - uuid: 44bf5657e3944b5a9dc37a0680a05d01
-      name: Library Movie Count
-      type: DEPENDENT
-      key: jellyfin.library.movies
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Movie Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.MovieCount
-      master_item:
-        key: jellyfin.library.counts.raw
-      triggers:
-      - uuid: 73ef4d4a46e94935b102a794b7589b59
-        expression: last(/Jellyfin by HTTP/jellyfin.library.movies)<>last(/Jellyfin by HTTP/jellyfin.library.movies,#2) and last(/Jellyfin by HTTP/jellyfin.library.movies,#2)>0
-        name: Library movie count changed to {ITEM.VALUE}
-        priority: INFO
-        description: Library movie count has changed.
-    - uuid: 77adf10c06574b1f90ea43d71fa220f0
-      name: Library Series Count
-      type: DEPENDENT
-      key: jellyfin.library.series
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Series Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.SeriesCount
-      master_item:
-        key: jellyfin.library.counts.raw
-      triggers:
-      - uuid: 804f1ed3e9d7472184b460b2e2c9a4c0
-        expression: last(/Jellyfin by HTTP/jellyfin.library.series)<>last(/Jellyfin by HTTP/jellyfin.library.series,#2) and last(/Jellyfin by HTTP/jellyfin.library.series,#2)>0
-        name: Library series count changed to {ITEM.VALUE}
-        priority: INFO
-        description: Library series count has changed.
-    - uuid: 5c24984fb3894a3e9863c05ed9f12650
-      name: Library Episode Count
-      type: DEPENDENT
-      key: jellyfin.library.episodes
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Episode Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.EpisodeCount
-      master_item:
-        key: jellyfin.library.counts.raw
-    - uuid: 58f870c8c33745cdb54d14cf1bfbcf80
-      name: Library Song Count
-      type: DEPENDENT
-      key: jellyfin.library.songs
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Song Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.SongCount
-      master_item:
-        key: jellyfin.library.counts.raw
-    - uuid: fe0b97ae811740cd928772a25bcdedcf
-      name: Library Album Count
-      type: DEPENDENT
-      key: jellyfin.library.albums
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Album Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.AlbumCount
-      master_item:
-        key: jellyfin.library.counts.raw
-    - uuid: 0a161533c9ba4c52b70e142700cca973
-      name: Library Music Video Count
-      type: DEPENDENT
-      key: jellyfin.library.music_videos
-      delay: '0'
-      history: 90d
-      value_type: UNSIGNED
-      description: Library Music Video Count.
-      preprocessing:
-      - type: JSONPATH
-        parameters:
-        - $.MusicVideoCount
-      master_item:
-        key: jellyfin.library.counts.raw
+    - uuid: 9523096631dc4452832f433759fb18a2
+      template: 'Jellyfin by HTTP'
+      name: 'Jellyfin by HTTP'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 762148f93ab54167a3ffd7b14843cf25
+          name: 'GC Collections Gen 0'
+          type: DEPENDENT
+          key: jellyfin.gc.collections_gen0
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'GC Collections Gen 0.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_collection_count_total{gc_generation="0"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: fc9d4f7d6b3b4db7b2fb84fe0dc1559b
+          name: 'GC Collections Gen 1'
+          type: DEPENDENT
+          key: jellyfin.gc.collections_gen1
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'GC Collections Gen 1.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_collection_count_total{gc_generation="1"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 18a8ada457a04b04ba04a32b5ba114fb
+          name: 'GC Collections Gen 2'
+          type: DEPENDENT
+          key: jellyfin.gc.collections_gen2
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'GC Collections Gen 2.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_collection_count_total{gc_generation="2"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: a9cf97cc583f463aa5ce37432cf8969e
+          name: 'GC Fragmentation'
+          type: DEPENDENT
+          key: jellyfin.gc.fragmentation
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: '%'
+          description: 'GC Fragmentation.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_runtime_gc_fragmentation
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 0b737bc20e504271a9fb2bbf13285f8e
+          name: 'GC Heap Size Gen 0'
+          type: DEPENDENT
+          key: jellyfin.gc.heap_gen0
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'GC Heap Size Gen 0.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_heap_size_bytes{gc_generation="0"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 3b239bc6f747441c92124c2927ceb8d8
+          name: 'GC Heap Size Gen 1'
+          type: DEPENDENT
+          key: jellyfin.gc.heap_gen1
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'GC Heap Size Gen 1.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_heap_size_bytes{gc_generation="1"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 01484325d55b4becad04a25a32470ab8
+          name: 'GC Heap Size Gen 2'
+          type: DEPENDENT
+          key: jellyfin.gc.heap_gen2
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'GC Heap Size Gen 2.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_heap_size_bytes{gc_generation="2"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 8840a138c8914dcf9dba9185b6fc0e07
+          name: 'GC Large Object Heap Size'
+          type: DEPENDENT
+          key: jellyfin.gc.heap_loh
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'GC Large Object Heap Size.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'dotnet_gc_heap_size_bytes{gc_generation="loh"}'
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: f8a8e7619e474cfda59c618ce5dac51a
+          name: 'GC Pause Ratio'
+          type: DEPENDENT
+          key: jellyfin.gc.pause_ratio
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: '%'
+          description: 'GC Pause Ratio.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_gc_pause_ratio
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 8af7a479fbf94e2bbaa4577251be73e5
+          name: 'Server Health Status'
+          type: DEPENDENT
+          key: jellyfin.health
+          delay: '0'
+          history: 7d
+          value_type: CHAR
+          trends: '0'
+          description: 'Parsed health check status.'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - ^(\S+)
+                - \1
+          master_item:
+            key: jellyfin.health.raw
+          triggers:
+            - uuid: 26662a00592f4fe387dd01866e569de7
+              expression: 'last(/Jellyfin by HTTP/jellyfin.health)<>"Healthy"'
+              name: 'Jellyfin Server Unhealthy'
+              priority: DISASTER
+              description: 'The /health endpoint returned a non-Healthy status.'
+        - uuid: cbda46a795e0470dbf267d5d67fc880f
+          name: 'Raw Health Check Response'
+          type: HTTP_AGENT
+          key: jellyfin.health.raw
+          delay: '{$JELLYFIN.HEALTH.INTERVAL}'
+          history: 7d
+          value_type: CHAR
+          trends: '0'
+          description: 'Raw health check response from Jellyfin /health endpoint.'
+          url: '{$JELLYFIN.URL}/health'
+        - uuid: a0a48c926a0a4bcbaeb8ad3abb06cae8
+          name: 'HTTP Active Requests'
+          type: DEPENDENT
+          key: jellyfin.http.requests_active
+          delay: '0'
+          history: 30d
+          description: 'HTTP Active Requests.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_hosting_current_requests
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 64e7655097a0459baabc688099a1fa24
+          name: 'HTTP Failed Requests Total'
+          type: DEPENDENT
+          key: jellyfin.http.requests_failed
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'HTTP Failed Requests Total.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_hosting_failed_requests
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+          triggers:
+            - uuid: 1e6ab2f9841e4f42846ace16bcc0b2b0
+              expression: 'max(/Jellyfin by HTTP/jellyfin.http.requests_failed,15m)-min(/Jellyfin by HTTP/jellyfin.http.requests_failed,15m)>10'
+              name: 'High rate of failed HTTP requests'
+              priority: WARNING
+              description: 'Failed HTTP requests increased by more than 10 in the last 5 minutes.'
+        - uuid: aa9b0ccaa4e14a8fbeac0f57a02e1882
+          name: 'HTTP Requests per Second'
+          type: DEPENDENT
+          key: jellyfin.http.requests_per_second
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'HTTP Requests per Second.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_hosting_requests_per_second_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 19dddfd8f7b84f4ca38181a115b4c1f7
+          name: 'HTTP Total Requests'
+          type: DEPENDENT
+          key: jellyfin.http.requests_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'HTTP Total Requests.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_hosting_total_requests
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 154736c3672a4420aa16d06e9edb5c04
+          name: 'Kestrel Active Connections'
+          type: DEPENDENT
+          key: jellyfin.kestrel.connections_active
+          delay: '0'
+          history: 30d
+          description: 'Kestrel Active Connections.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_server_kestrel_current_connections
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 1595cd7b108344c4a5215e47473e1ef8
+          name: 'Kestrel Connection Rate'
+          type: DEPENDENT
+          key: jellyfin.kestrel.connections_per_second
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'Kestrel Connection Rate.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_server_kestrel_connections_per_second_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: e9d0032569564c329596b921123fb936
+          name: 'Kestrel Total Connections'
+          type: DEPENDENT
+          key: jellyfin.kestrel.connections_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'Kestrel Total Connections.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_server_kestrel_total_connections
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 9013ea1c08654489b1ca33491f53f313
+          name: 'Kestrel Request Queue Length'
+          type: DEPENDENT
+          key: jellyfin.kestrel.request_queue_length
+          delay: '0'
+          history: 30d
+          description: 'Kestrel Request Queue Length.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - microsoft_aspnetcore_server_kestrel_request_queue_length
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+          triggers:
+            - uuid: d20e3d25b9d343e5b2a25bd78ac284a7
+              expression: 'min(/Jellyfin by HTTP/jellyfin.kestrel.request_queue_length,15m)>10'
+              name: 'Kestrel request queue backlog'
+              priority: WARNING
+              description: 'Kestrel request queue length has been over 10 for 3 minutes.'
+        - uuid: fe0b97ae811740cd928772a25bcdedcf
+          name: 'Library Album Count'
+          type: DEPENDENT
+          key: jellyfin.library.albums
+          delay: '0'
+          history: 90d
+          description: 'Library Album Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.AlbumCount
+          master_item:
+            key: jellyfin.library.counts.raw
+        - uuid: c2e9a435d37e49df9bbce76e0d8a2cce
+          name: 'Raw Library Item Counts'
+          type: HTTP_AGENT
+          key: jellyfin.library.counts.raw
+          delay: '{$JELLYFIN.LIBRARY.INTERVAL}'
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Raw Library Item Counts JSON data.'
+          url: '{$JELLYFIN.URL}/Items/Counts'
+          headers:
+            - name: Authorization
+              value: 'MediaBrowser Token="{$JELLYFIN.API.KEY}"'
+        - uuid: 5c24984fb3894a3e9863c05ed9f12650
+          name: 'Library Episode Count'
+          type: DEPENDENT
+          key: jellyfin.library.episodes
+          delay: '0'
+          history: 90d
+          description: 'Library Episode Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.EpisodeCount
+          master_item:
+            key: jellyfin.library.counts.raw
+        - uuid: 44bf5657e3944b5a9dc37a0680a05d01
+          name: 'Library Movie Count'
+          type: DEPENDENT
+          key: jellyfin.library.movies
+          delay: '0'
+          history: 90d
+          description: 'Library Movie Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.MovieCount
+          master_item:
+            key: jellyfin.library.counts.raw
+          triggers:
+            - uuid: 73ef4d4a46e94935b102a794b7589b59
+              expression: 'last(/Jellyfin by HTTP/jellyfin.library.movies)<>last(/Jellyfin by HTTP/jellyfin.library.movies,#2) and last(/Jellyfin by HTTP/jellyfin.library.movies,#2)>0'
+              name: 'Library movie count changed to {ITEM.VALUE}'
+              priority: INFO
+              description: 'Library movie count has changed.'
+        - uuid: 0a161533c9ba4c52b70e142700cca973
+          name: 'Library Music Video Count'
+          type: DEPENDENT
+          key: jellyfin.library.music_videos
+          delay: '0'
+          history: 90d
+          description: 'Library Music Video Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.MusicVideoCount
+          master_item:
+            key: jellyfin.library.counts.raw
+        - uuid: 77adf10c06574b1f90ea43d71fa220f0
+          name: 'Library Series Count'
+          type: DEPENDENT
+          key: jellyfin.library.series
+          delay: '0'
+          history: 90d
+          description: 'Library Series Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.SeriesCount
+          master_item:
+            key: jellyfin.library.counts.raw
+          triggers:
+            - uuid: 804f1ed3e9d7472184b460b2e2c9a4c0
+              expression: 'last(/Jellyfin by HTTP/jellyfin.library.series)<>last(/Jellyfin by HTTP/jellyfin.library.series,#2) and last(/Jellyfin by HTTP/jellyfin.library.series,#2)>0'
+              name: 'Library series count changed to {ITEM.VALUE}'
+              priority: INFO
+              description: 'Library series count has changed.'
+        - uuid: 58f870c8c33745cdb54d14cf1bfbcf80
+          name: 'Library Song Count'
+          type: DEPENDENT
+          key: jellyfin.library.songs
+          delay: '0'
+          history: 90d
+          description: 'Library Song Count.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.SongCount
+          master_item:
+            key: jellyfin.library.counts.raw
+        - uuid: c9701839562842fc9ae2c34ade6a5c84
+          name: 'Raw Prometheus Metrics'
+          type: HTTP_AGENT
+          key: jellyfin.metrics.raw
+          delay: '{$JELLYFIN.HEALTH.INTERVAL}'
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Raw prometheus metrics from /metrics endpoint.'
+          url: '{$JELLYFIN.URL}/metrics'
+        - uuid: d6f1464275be418dab17a7f43956080d
+          name: 'Available CPU Cores'
+          type: DEPENDENT
+          key: jellyfin.process.cpu_count
+          delay: '0'
+          history: 30d
+          description: 'Available CPU Cores.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - process_cpu_count
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 8c466104aa3f4d6fb525c6614a482239
+          name: 'Process CPU Time Total'
+          type: DEPENDENT
+          key: jellyfin.process.cpu_seconds_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: s
+          description: 'Process CPU Time Total.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - process_cpu_seconds_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 61a23670cab44556ac42027a0e89d2c2
+          name: 'Process CPU Usage'
+          type: DEPENDENT
+          key: jellyfin.process.cpu_usage
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: '%'
+          description: 'Process CPU Usage.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_runtime_cpu_usage
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+          triggers:
+            - uuid: cc531bcdb4234285b4c769fd6fdf415e
+              expression: 'min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,15m)>{$JELLYFIN.CPU.HIGH}'
+              name: 'Jellyfin Server CPU Usage is HIGH'
+              priority: HIGH
+              description: 'CPU usage exceeded high threshold.'
+            - uuid: ab9abeae02b747ae897e388fb26c0b3f
+              expression: 'min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,15m)>{$JELLYFIN.CPU.WARN}'
+              name: 'Jellyfin Server CPU Usage is WARNING'
+              priority: WARNING
+              description: 'CPU usage exceeded warning threshold.'
+              dependencies:
+                - name: 'Jellyfin Server CPU Usage is HIGH'
+                  expression: 'min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,15m)>{$JELLYFIN.CPU.HIGH}'
+        - uuid: 0bd1d928702f42a78e436c7f395ae214
+          name: 'Process Working Set Memory'
+          type: DEPENDENT
+          key: jellyfin.process.working_set
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'Process Working Set Memory.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - process_working_set_bytes
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+          triggers:
+            - uuid: 0c690c0f31024107a65889f86fa40c28
+              expression: 'min(/Jellyfin by HTTP/jellyfin.process.working_set,15m)>{$JELLYFIN.MEM.HIGH}'
+              name: 'Jellyfin Server Memory Usage is HIGH'
+              priority: HIGH
+              description: 'Memory usage exceeded high threshold.'
+            - uuid: c208366aac3646ce81690de2ebcd4aed
+              expression: 'min(/Jellyfin by HTTP/jellyfin.process.working_set,15m)>{$JELLYFIN.MEM.WARN}'
+              name: 'Jellyfin Server Memory Usage is WARNING'
+              priority: WARNING
+              description: 'Memory usage exceeded warning threshold.'
+              dependencies:
+                - name: 'Jellyfin Server Memory Usage is HIGH'
+                  expression: 'min(/Jellyfin by HTTP/jellyfin.process.working_set,15m)>{$JELLYFIN.MEM.HIGH}'
+        - uuid: b71e1668885947db8ddc0467ceec3cc7
+          name: 'Product Name'
+          type: DEPENDENT
+          key: jellyfin.product
+          delay: '0'
+          history: 90d
+          value_type: CHAR
+          trends: '0'
+          description: 'Jellyfin Product Name.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.ProductName
+          master_item:
+            key: jellyfin.sysinfo.raw
+        - uuid: bba0731fa8e146d5bb026155aa6814df
+          name: 'Server ID'
+          type: DEPENDENT
+          key: jellyfin.server.id
+          delay: '0'
+          history: 90d
+          value_type: CHAR
+          trends: '0'
+          description: 'Jellyfin Server ID.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.Id
+          master_item:
+            key: jellyfin.sysinfo.raw
+        - uuid: 745f75eb1454485089c31696eec53b95
+          name: 'Server Name'
+          type: DEPENDENT
+          key: jellyfin.server.name
+          delay: '0'
+          history: 90d
+          value_type: CHAR
+          trends: '0'
+          description: 'Jellyfin Server Name.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.ServerName
+          master_item:
+            key: jellyfin.sysinfo.raw
+        - uuid: a41580b104f24401a873251dac2a17f0
+          name: 'Active Sessions Total'
+          type: DEPENDENT
+          key: jellyfin.sessions.count
+          delay: '0'
+          history: 30d
+          description: 'Active Sessions Total.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value).length;'
+          master_item:
+            key: jellyfin.sessions.raw
+          triggers:
+            - uuid: a9ff8655d6744cc3a48f3818c1f3105b
+              expression: 'min(/Jellyfin by HTTP/jellyfin.sessions.count,15m)>{$JELLYFIN.SESSIONS.WARN}'
+              name: 'High active session count'
+              priority: INFO
+              description: 'Active sessions count is high.'
+        - uuid: 22061bcf624d48b6ab86e14df8f12bfd
+          name: 'Sessions Direct Playing'
+          type: DEPENDENT
+          key: jellyfin.sessions.direct_play
+          delay: '0'
+          history: 30d
+          description: 'Sessions Direct Playing.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value).filter(function(s){return s.PlayState&&s.PlayState.PlayMethod==="DirectPlay";}).length;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: 2b1bfc4bac464f6c9acc3772aee151be
+          name: 'Sessions Currently Playing'
+          type: DEPENDENT
+          key: jellyfin.sessions.playing
+          delay: '0'
+          history: 30d
+          description: 'Sessions Currently Playing.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value).filter(function(s){return s.NowPlayingItem!=null;}).length;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+        - uuid: 4a55f9e492f34518a015e56e1f7146af
+          name: 'Raw Active Playing Sessions'
+          type: HTTP_AGENT
+          key: jellyfin.sessions.playing.raw
+          delay: '{$JELLYFIN.HEALTH.INTERVAL}'
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Raw playing sessions JSON data.'
+          url: '{$JELLYFIN.URL}/Sessions?activeWithinSeconds=30'
+          headers:
+            - name: Authorization
+              value: 'MediaBrowser Token="{$JELLYFIN.API.KEY}"'
+        - uuid: 50378c38895a469d97169640dbe69379
+          name: 'Raw Sessions Data'
+          type: HTTP_AGENT
+          key: jellyfin.sessions.raw
+          delay: '{$JELLYFIN.HEALTH.INTERVAL}'
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Raw sessions JSON data.'
+          url: '{$JELLYFIN.URL}/Sessions'
+          headers:
+            - name: Authorization
+              value: 'MediaBrowser Token="{$JELLYFIN.API.KEY}"'
+        - uuid: c30dc18dcfa543519390f688d1c4dd56
+          name: 'Sessions Transcoding'
+          type: DEPENDENT
+          key: jellyfin.sessions.transcode
+          delay: '0'
+          history: 30d
+          description: 'Sessions Transcoding.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value).filter(function(s){return s.PlayState&&s.PlayState.PlayMethod==="Transcode";}).length;'
+          master_item:
+            key: jellyfin.sessions.playing.raw
+          triggers:
+            - uuid: e4127c21106442cba6fa900c3b38239a
+              expression: 'min(/Jellyfin by HTTP/jellyfin.sessions.transcode,15m)>{$JELLYFIN.TRANSCODE.WARN}'
+              name: 'High concurrent transcode load'
+              priority: WARNING
+              description: 'High number of concurrent transcode sessions.'
+        - uuid: 565f48d9cfd84f69a32be662d07bce92
+          name: 'Network Bytes Received'
+          type: DEPENDENT
+          key: jellyfin.sockets.bytes_received
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'Network Bytes Received.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_net_sockets_bytes_received
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: a78cebca349245c1ba7bf8a16486c48f
+          name: 'Network Bytes Sent'
+          type: DEPENDENT
+          key: jellyfin.sockets.bytes_sent
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          units: B
+          description: 'Network Bytes Sent.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_net_sockets_bytes_sent
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: ddfad1f0bf0e4291b17e2cd870c544d2
+          name: 'Sockets Incoming Connections Total'
+          type: DEPENDENT
+          key: jellyfin.sockets.incoming_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'Sockets Incoming Connections Total.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_sockets_connections_established_incoming_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: e26a5bde38e84c72b1b36f44d4c82303
+          name: 'Sockets Outgoing Connections Total'
+          type: DEPENDENT
+          key: jellyfin.sockets.outgoing_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'Sockets Outgoing Connections Total.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_sockets_connections_established_outgoing_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 3792ba19866f4e07a76c96dc4b49c839
+          name: 'Raw System Info (Public)'
+          type: HTTP_AGENT
+          key: jellyfin.sysinfo.raw
+          delay: 15m
+          history: 7d
+          value_type: CHAR
+          trends: '0'
+          description: 'Raw public system info.'
+          url: '{$JELLYFIN.URL}/System/Info/Public'
+        - uuid: a030ed1d0f584505b80828d5a49950c9
+          name: 'ThreadPool Completed Work Items'
+          type: DEPENDENT
+          key: jellyfin.threadpool.completed_total
+          delay: '0'
+          history: 30d
+          value_type: FLOAT
+          description: 'ThreadPool Completed Work Items.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_threadpool_throughput_total
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 9c05b6297f404358aa32f8e30fb82a94
+          name: 'ThreadPool Queue Length'
+          type: DEPENDENT
+          key: jellyfin.threadpool.queue_length
+          delay: '0'
+          history: 30d
+          description: 'ThreadPool Queue Length.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_threadpool_queue_length_sum
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+          triggers:
+            - uuid: cf72a5700d9f46e3bf845b8c9d738f3c
+              expression: 'min(/Jellyfin by HTTP/jellyfin.threadpool.queue_length,15m)>50'
+              name: 'ThreadPool queue backlog'
+              priority: WARNING
+              description: 'ThreadPool queue length has been over 50 for 5 minutes.'
+        - uuid: 0d45b4894bc94defab4e98c8c3e184cf
+          name: 'ThreadPool Active Threads'
+          type: DEPENDENT
+          key: jellyfin.threadpool.threads
+          delay: '0'
+          history: 30d
+          description: 'ThreadPool Active Threads.'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - dotnet_threadpool_num_threads
+                - value
+                - ''
+          master_item:
+            key: jellyfin.metrics.raw
+        - uuid: 11f2e2de423140ef804088eaca388d51
+          name: 'Server Version'
+          type: DEPENDENT
+          key: jellyfin.version
+          delay: '0'
+          history: 90d
+          value_type: CHAR
+          trends: '0'
+          description: 'Jellyfin Server Version.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.Version
+          master_item:
+            key: jellyfin.sysinfo.raw
+          triggers:
+            - uuid: 07cc66967f6b484880198f2345495878
+              expression: 'last(/Jellyfin by HTTP/jellyfin.version)<>last(/Jellyfin by HTTP/jellyfin.version,#2) and length(last(/Jellyfin by HTTP/jellyfin.version))>0'
+              name: 'Jellyfin version changed to {ITEM.VALUE}'
+              priority: INFO
+              description: 'Jellyfin version has changed.'
+      macros:
+        - macro: '{$JELLYFIN.API.KEY}'
+        - macro: '{$JELLYFIN.CPU.HIGH}'
+          value: '90'
+        - macro: '{$JELLYFIN.CPU.WARN}'
+          value: '70'
+        - macro: '{$JELLYFIN.HEALTH.INTERVAL}'
+          value: 1m
+        - macro: '{$JELLYFIN.LIBRARY.INTERVAL}'
+          value: 6h
+        - macro: '{$JELLYFIN.MEM.HIGH}'
+          value: '2147483648'
+        - macro: '{$JELLYFIN.MEM.WARN}'
+          value: '1073741824'
+        - macro: '{$JELLYFIN.SESSIONS.WARN}'
+          value: '10'
+        - macro: '{$JELLYFIN.TRANSCODE.WARN}'
+          value: '3'
+        - macro: '{$JELLYFIN.URL}'
+          value: 'http://localhost:8096'

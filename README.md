@@ -31,9 +31,10 @@
    - 8.1 [User Macros](#81-user-macros)
    - 8.2 [Master Items & Polling Intervals](#82-master-items--polling-intervals)
 9. [Triggers & Operational Alerts](#9-triggers--operational-alerts)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Known Considerations](#11-known-considerations)
-12. [License](#12-license)
+10. [Grafana Dashboard (Zabbix Plugin)](#10-grafana-dashboard-zabbix-plugin)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Known Considerations](#12-known-considerations)
+13. [License](#13-license)
 
 ---
 
@@ -342,22 +343,42 @@ docker exec zbx-proxy zabbix_proxy -R config_cache_reload
 | Severity | Trigger Name | Expression | Operational Guidance |
 |---|---|---|---|
 | **DISASTER** | **Jellyfin Server Unhealthy** | `last(/Jellyfin by HTTP/jellyfin.health)<>"Healthy"` | The `/health` endpoint returned a non-Healthy response. Check if the Jellyfin container crashed, ran out of memory, or if storage is unmounted. |
-| **HIGH** | **Jellyfin Server Memory Usage is HIGH** | `min(/Jellyfin by HTTP/jellyfin.process.working_set,5m)>{$JELLYFIN.MEM.HIGH}` | Working set exceeded 2 GiB for 5 minutes. Check for memory leaks or high library scan activity. |
-| **WARNING** | **Jellyfin Server Memory Usage is WARNING** | `min(/Jellyfin by HTTP/jellyfin.process.working_set,5m)>{$JELLYFIN.MEM.WARN}` | Working set exceeded 1 GiB for 5 minutes (suppressed if HIGH fires). |
-| **HIGH** | **Jellyfin Server CPU Usage is HIGH** | `min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,5m)>{$JELLYFIN.CPU.HIGH}` | Process CPU consumption sustained above 90% for 5 min. Usually caused by software video transcoding. |
-| **WARNING** | **Jellyfin Server CPU Usage is WARNING** | `min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,5m)>{$JELLYFIN.CPU.WARN}` | Process CPU consumption sustained above 70% for 5 min (suppressed if HIGH fires). |
-| **WARNING** | **Jellyfin High Rate of HTTP Failed Requests** | `change(/Jellyfin by HTTP/jellyfin.http.requests_failed)>10` | More than 10 failed HTTP requests (5xx) occurred within the last polling interval. |
-| **WARNING** | **Jellyfin ThreadPool Queue Backlog** | `min(/Jellyfin by HTTP/jellyfin.threadpool.queue_length,5m)>50` | .NET ThreadPool has >50 work items queued. The CPU is saturated with background tasks. |
-| **WARNING** | **Jellyfin Kestrel Request Queue Backlog** | `min(/Jellyfin by HTTP/jellyfin.kestrel.request_queue_length,3m)>10` | Incoming HTTP requests are queuing in Kestrel, indicating delayed request handling. |
-| **WARNING** | **High concurrent transcode load** | `min(/Jellyfin by HTTP/jellyfin.sessions.transcode,5m)>{$JELLYFIN.TRANSCODE.WARN}` | More than 3 concurrent transcode sessions active. Verify if hardware acceleration (VA-API / NVENC / QuickSync) is working properly. |
+| **HIGH** | **Jellyfin Server Memory Usage is HIGH** | `min(/Jellyfin by HTTP/jellyfin.process.working_set,15m)>{$JELLYFIN.MEM.HIGH}` | Working set exceeded 2 GiB sustained for 15 minutes. Check for memory leaks or high library scan activity. |
+| **WARNING** | **Jellyfin Server Memory Usage is WARNING** | `min(/Jellyfin by HTTP/jellyfin.process.working_set,15m)>{$JELLYFIN.MEM.WARN}` | Working set exceeded 1 GiB sustained for 15 minutes (suppressed if HIGH fires). |
+| **HIGH** | **Jellyfin Server CPU Usage is HIGH** | `min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,15m)>{$JELLYFIN.CPU.HIGH}` | Process CPU consumption sustained above 90% for 15 minutes. Usually caused by software video transcoding. |
+| **WARNING** | **Jellyfin Server CPU Usage is WARNING** | `min(/Jellyfin by HTTP/jellyfin.process.cpu_usage,15m)>{$JELLYFIN.CPU.WARN}` | Process CPU consumption sustained above 70% for 15 minutes (suppressed if HIGH fires). |
+| **WARNING** | **High rate of failed HTTP requests** | `max(/Jellyfin by HTTP/jellyfin.http.requests_failed,15m)-min(/Jellyfin by HTTP/jellyfin.http.requests_failed,15m)>10` | More than 10 failed HTTP requests (5xx) occurred within a 15-minute evaluation window. |
+| **WARNING** | **ThreadPool queue backlog** | `min(/Jellyfin by HTTP/jellyfin.threadpool.queue_length,15m)>50` | .NET ThreadPool has >50 work items queued sustained for 15 minutes. The CPU is saturated with background tasks. |
+| **WARNING** | **Kestrel request queue backlog** | `min(/Jellyfin by HTTP/jellyfin.kestrel.request_queue_length,15m)>10` | Incoming HTTP requests are queuing in Kestrel sustained for 15 minutes, indicating delayed request handling. |
+| **WARNING** | **High concurrent transcode load** | `min(/Jellyfin by HTTP/jellyfin.sessions.transcode,15m)>{$JELLYFIN.TRANSCODE.WARN}` | More than 3 concurrent transcode sessions active sustained for 15 minutes. Verify if hardware acceleration (VA-API / NVENC / QuickSync) is working properly. |
 | **INFO** | **Jellyfin version changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.version)<>last(/Jellyfin by HTTP/jellyfin.version,#2)` | Jellyfin was updated to a new version. |
-| **INFO** | **High active session count** | `min(/Jellyfin by HTTP/jellyfin.sessions.count,5m)>{$JELLYFIN.SESSIONS.WARN}` | More than 10 client sessions are connected simultaneously. |
+| **INFO** | **High active session count** | `min(/Jellyfin by HTTP/jellyfin.sessions.count,15m)>{$JELLYFIN.SESSIONS.WARN}` | More than 10 client sessions are connected simultaneously sustained for 15 minutes. |
 | **INFO** | **Library movie count changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.library.movies)<>last(#2)` | A movie was added or removed from the library. |
 | **INFO** | **Library series count changed to {ITEM.VALUE}** | `last(/Jellyfin by HTTP/jellyfin.library.series)<>last(#2)` | A TV series was added or removed from the library. |
 
 ---
 
-## 10. Troubleshooting
+
+---
+
+## 10. Grafana Dashboard (Zabbix Plugin)
+
+A production-ready Grafana dashboard is included under [`grafana/jellyfin_media_server_telemetry.json`](grafana/jellyfin_media_server_telemetry.json). It integrates seamlessly with the official [Grafana Zabbix plugin](https://grafana.com/grafana/plugins/alexanderzobnin-zabbix-datasource/) (`alexanderzobnin-zabbix-datasource`).
+
+### Dashboard Highlights:
+* **Executive Overview & Playback:** Real-time health badge, version, active sessions, and direct play vs. transcode ratio.
+* **Media Library Inventory:** Live counters for movies, TV series, episodes, songs, albums, and music videos.
+* **System Resources:** CPU usage & working set memory gauges and dual-axis history.
+* **.NET Runtime & Garbage Collection:** GC pause ratio, heap fragmentation, Gen 0/1/2/LOH breakdown, and collection counts.
+* **Kestrel & Web Concurrency:** Active connections, HTTP throughput (req/s), request queue length, and 5xx errors.
+* **ThreadPool & Sockets:** ThreadPool saturation and network bandwidth (bytes in/out).
+
+### How to Import:
+1. In Grafana, navigate to **Dashboards** → **New** → **Import**.
+2. Upload [`grafana/jellyfin_media_server_telemetry.json`](grafana/jellyfin_media_server_telemetry.json).
+3. Select your Zabbix data source and click **Import**.
+
+## 11. Troubleshooting
 
 ### Problem: `Cannot connect to [[192.168.x.x]:8096]: connection timed out` from Zabbix Proxy
 - **Cause:** When Zabbix Proxy runs in a Docker bridge container on the same host as Jellyfin, connecting to the host's LAN IP may fail if Docker hairpinning / `br_netfilter` drops outbound-to-host packets.
@@ -375,14 +396,14 @@ docker exec zbx-proxy zabbix_proxy -R config_cache_reload
 
 ---
 
-## 11. Known Considerations
+## 12. Known Considerations
 
 - **Library Item Polling:** The `/Items/Counts` endpoint traverses library indices. The default polling interval is set to **6 hours** (`6h`) to minimize unnecessary disk and database overhead on large libraries.
 - **Transcode vs. Direct Play:** The session parser distinguishes between `DirectPlay` and `Transcode` streams. Direct streaming uses negligible CPU, whereas software transcoding uses 100% of allocated cores. If you observe high CPU triggers alongside transcode alerts, configure GPU passthrough (QuickSync, VA-API, or NVENC).
 
 ---
 
-## 12. License
+## 13. License
 
 This project is licensed under the [MIT License](LICENSE).
 Copyright (c) 2026 José Henrique.
