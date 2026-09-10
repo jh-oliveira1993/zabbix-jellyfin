@@ -33,18 +33,67 @@
       "type": "row"
     },
     {
-      "id": 1,
-      "title": "Server Health",
-      "type": "stat",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Healthy": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "HEALTHY"
+                },
+                "Unhealthy": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "UNHEALTHY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 4,
         "w": 3,
         "x": 0,
         "y": 1
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Server Health Status$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -85,7 +134,7 @@
           "proxy": {
             "filter": ""
           },
-          "queryType": "0",
+          "queryType": "2",
           "refId": "A",
           "resultFormat": "time_series",
           "schema": 12,
@@ -101,28 +150,20 @@
           }
         }
       ],
+      "title": "Server Health",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "Healthy": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "HEALTHY"
-                },
-                "Unhealthy": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "UNHEALTHY"
-                }
-              }
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -131,13 +172,19 @@
                 "value": 0
               }
             ]
-          },
-          "unit": "short"
+          }
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
+      "id": 2,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
@@ -146,27 +193,12 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^Server Version$/",
           "values": false
         },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 2,
-      "title": "Server Version",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 3,
-        "y": 1
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -207,7 +239,7 @@
           "proxy": {
             "filter": ""
           },
-          "queryType": "0",
+          "queryType": "2",
           "refId": "A",
           "resultFormat": "time_series",
           "schema": 12,
@@ -223,6 +255,14 @@
           }
         }
       ],
+      "title": "Server Version",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -235,6 +275,18 @@
               {
                 "color": "blue",
                 "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
               }
             ]
           },
@@ -242,8 +294,15 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "id": 3,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
@@ -258,21 +317,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 3,
-      "title": "Active Sessions Total",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 6,
-        "y": 1
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -329,6 +373,14 @@
           }
         }
       ],
+      "title": "Active Sessions Total",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -347,12 +399,8 @@
                 "value": 1
               },
               {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
+                "color": "orange",
+                "value": 3
               }
             ]
           },
@@ -360,6 +408,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
+      "id": 4,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -376,21 +431,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 4,
-      "title": "Sessions Currently Playing",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 9,
-        "y": 1
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -447,26 +487,26 @@
           }
         }
       ],
+      "title": "Sessions Currently Playing",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
-                "value": 0
-              },
-              {
                 "color": "green",
-                "value": 1
-              },
-              {
-                "color": "orange",
-                "value": 3
+                "value": 0
               }
             ]
           },
@@ -474,12 +514,26 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 5,
       "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -487,24 +541,11 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      }
-    },
-    {
-      "id": 5,
-      "title": "Playback Mode (Direct vs Transcode)",
-      "type": "bargauge",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 1
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -613,10 +654,52 @@
           }
         }
       ],
+      "title": "Playback Mode (Direct vs Transcode)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -632,46 +715,29 @@
         },
         "overrides": []
       },
-      "options": {
-        "displayMode": "gradient",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": false,
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      }
-    },
-    {
-      "id": 6,
-      "title": "Sessions & Playback Modes History",
-      "type": "timeseries",
       "gridPos": {
         "h": 4,
         "w": 8,
         "x": 16,
         "y": 1
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -884,75 +950,8 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
+      "title": "Sessions & Playback Modes History",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -968,18 +967,52 @@
       "type": "row"
     },
     {
-      "id": 7,
-      "title": "Movies",
-      "type": "stat",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 4,
         "w": 4,
         "x": 0,
         "y": 6
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1036,6 +1069,14 @@
           }
         }
       ],
+      "title": "Movies",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1046,7 +1087,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "purple",
+                "color": "blue",
                 "value": 0
               }
             ]
@@ -1055,6 +1096,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 6
+      },
+      "id": 8,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1071,21 +1119,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 8,
-      "title": "TV Series",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 6
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1142,6 +1175,14 @@
           }
         }
       ],
+      "title": "TV Series",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1152,7 +1193,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "dark-blue",
                 "value": 0
               }
             ]
@@ -1161,6 +1202,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 6
+      },
+      "id": 9,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1177,21 +1225,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 9,
-      "title": "Episodes",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 6
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1248,6 +1281,14 @@
           }
         }
       ],
+      "title": "Episodes",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1258,7 +1299,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-blue",
+                "color": "green",
                 "value": 0
               }
             ]
@@ -1267,6 +1308,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 6
+      },
+      "id": 10,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1283,21 +1331,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 10,
-      "title": "Songs / Tracks",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 6
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1354,6 +1387,14 @@
           }
         }
       ],
+      "title": "Songs / Tracks",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1364,7 +1405,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "teal",
                 "value": 0
               }
             ]
@@ -1373,6 +1414,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 6
+      },
+      "id": 11,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1389,21 +1437,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 11,
-      "title": "Music Albums",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 6
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1460,6 +1493,14 @@
           }
         }
       ],
+      "title": "Music Albums",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1470,7 +1511,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "teal",
+                "color": "semi-dark-blue",
                 "value": 0
               }
             ]
@@ -1479,6 +1520,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 6
+      },
+      "id": 12,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1495,21 +1543,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 12,
-      "title": "Music Videos",
-      "type": "stat",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 6
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1566,42 +1599,8 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "semi-dark-blue",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      }
+      "title": "Music Videos",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -1617,18 +1616,60 @@
       "type": "row"
     },
     {
-      "id": 13,
-      "title": "Process CPU Usage",
-      "type": "gauge",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 4,
         "x": 0,
         "y": 11
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 13,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1685,14 +1726,22 @@
           }
         }
       ],
+      "title": "Process CPU Usage",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 4294967296,
           "min": 0,
-          "max": 100,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1702,18 +1751,25 @@
               },
               {
                 "color": "yellow",
-                "value": 70
+                "value": 1073741824
               },
               {
                 "color": "red",
-                "value": 90
+                "value": 2147483648
               }
             ]
           },
-          "unit": "percent"
+          "unit": "bytes"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 4,
+        "y": 11
+      },
+      "id": 14,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -1728,21 +1784,6 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
         "sizing": "auto"
-      }
-    },
-    {
-      "id": 14,
-      "title": "Process Working Set Memory",
-      "type": "gauge",
-      "gridPos": {
-        "h": 8,
-        "w": 4,
-        "x": 4,
-        "y": 11
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1799,64 +1840,107 @@
           }
         }
       ],
+      "title": "Process Working Set Memory",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
-          "min": 0,
-          "max": 4294967296,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 1073741824
-              },
-              {
-                "color": "red",
-                "value": 2147483648
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Process Working Set Memory"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
       },
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      }
-    },
-    {
-      "id": 15,
-      "title": "CPU Usage & Working Set Memory History",
-      "type": "timeseries",
       "gridPos": {
         "h": 8,
         "w": 16,
         "x": 8,
         "y": 11
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -1965,92 +2049,8 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Process Working Set Memory"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          }
-        ]
-      },
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
+      "title": "CPU Usage & Working Set Memory History",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -2066,18 +2066,60 @@
       "type": "row"
     },
     {
-      "id": 16,
-      "title": "GC Pause Ratio",
-      "type": "gauge",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 25,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 4,
         "x": 0,
         "y": 20
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 16,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -2134,14 +2176,22 @@
           }
         }
       ],
+      "title": "GC Pause Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 100,
           "min": 0,
-          "max": 25,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -2151,11 +2201,11 @@
               },
               {
                 "color": "yellow",
-                "value": 5
+                "value": 25
               },
               {
                 "color": "red",
-                "value": 10
+                "value": 50
               }
             ]
           },
@@ -2163,6 +2213,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 4,
+        "y": 20
+      },
+      "id": 17,
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -2177,21 +2234,6 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
         "sizing": "auto"
-      }
-    },
-    {
-      "id": 17,
-      "title": "GC Heap Fragmentation",
-      "type": "gauge",
-      "gridPos": {
-        "h": 8,
-        "w": 4,
-        "x": 4,
-        "y": 20
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -2248,64 +2290,90 @@
           }
         }
       ],
+      "title": "GC Heap Fragmentation",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
-          "min": 0,
-          "max": 100,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 25
-              },
-              {
-                "color": "red",
-                "value": 50
               }
             ]
           },
-          "unit": "percent"
+          "unit": "bytes"
         },
         "overrides": []
       },
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      }
-    },
-    {
-      "id": 18,
-      "title": "GC Heap Sizes Breakdown (Gen 0, 1, 2, LOH)",
-      "type": "timeseries",
       "gridPos": {
         "h": 8,
         "w": 10,
         "x": 8,
         "y": 20
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -2518,6 +2586,14 @@
           }
         }
       ],
+      "title": "GC Heap Sizes Breakdown (Gen 0, 1, 2, LOH)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2547,6 +2623,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -2566,10 +2643,17 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "short"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 20
+      },
+      "id": 19,
       "options": {
         "legend": {
           "calcs": [
@@ -2586,21 +2670,6 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
-    },
-    {
-      "id": 19,
-      "title": "GC Collections Cumulative",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 20
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -2761,75 +2830,8 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
+      "title": "GC Collections Cumulative",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -2845,18 +2847,60 @@
       "type": "row"
     },
     {
-      "id": 20,
-      "title": "Kestrel Active Connections",
-      "type": "stat",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 7,
         "w": 4,
         "x": 0,
         "y": 29
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 20,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -2913,6 +2957,14 @@
           }
         }
       ],
+      "title": "Kestrel Active Connections",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2923,23 +2975,22 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 20
-              },
-              {
-                "color": "red",
-                "value": 50
               }
             ]
           },
-          "unit": "short"
+          "unit": "reqps"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 4,
+        "y": 29
+      },
+      "id": 21,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -2956,21 +3007,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 21,
-      "title": "HTTP Request Rate",
-      "type": "stat",
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 4,
-        "y": 29
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -3027,6 +3063,14 @@
           }
         }
       ],
+      "title": "HTTP Request Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3037,15 +3081,30 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "green",
                 "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
               }
             ]
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 8,
+        "y": 29
+      },
+      "id": 22,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -3062,21 +3121,6 @@
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
-      }
-    },
-    {
-      "id": 22,
-      "title": "HTTP Failed Requests Total",
-      "type": "stat",
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 8,
-        "y": 29
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -3133,10 +3177,52 @@
           }
         }
       ],
+      "title": "HTTP Failed Requests Total",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -3145,14 +3231,6 @@
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 10
               }
             ]
           },
@@ -3160,37 +3238,29 @@
         },
         "overrides": []
       },
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      }
-    },
-    {
-      "id": 23,
-      "title": "Kestrel Connections, Request Rates & Queues",
-      "type": "timeseries",
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 12,
         "y": 29
       },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -3403,6 +3473,27 @@
           }
         }
       ],
+      "title": "Kestrel Connections, Request Rates & Queues",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 105,
+      "panels": [],
+      "title": "ThreadPool & Network Sockets",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3432,6 +3523,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -3455,6 +3547,13 @@
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 37
+      },
+      "id": 24,
       "options": {
         "legend": {
           "calcs": [
@@ -3471,34 +3570,6 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 36
-      },
-      "id": 105,
-      "panels": [],
-      "title": "ThreadPool & Network Sockets",
-      "type": "row"
-    },
-    {
-      "id": 24,
-      "title": "ThreadPool Active Threads & Queue Backlog",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 37
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -3659,6 +3730,14 @@
           }
         }
       ],
+      "title": "ThreadPool Active Threads & Queue Backlog",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "ffk089lf2vfuof"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3688,6 +3767,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -3707,10 +3787,17 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "bytes"
         },
         "overrides": []
       },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 37
+      },
+      "id": 25,
       "options": {
         "legend": {
           "calcs": [
@@ -3727,21 +3814,6 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
-    },
-    {
-      "id": 25,
-      "title": "Network Sockets Bandwidth (Cumulative Bytes)",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 37
-      },
-      "datasource": {
-        "type": "alexanderzobnin-zabbix-datasource",
-        "uid": "ffk089lf2vfuof"
       },
       "pluginVersion": "12.4.2",
       "targets": [
@@ -3850,79 +3922,12 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 12,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max",
-            "mean"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
+      "title": "Network Sockets Bandwidth (Cumulative Bytes)",
+      "type": "timeseries"
     }
   ],
   "preload": false,
-  "refresh": "30s",
+  "refresh": "auto",
   "schemaVersion": 42,
   "tags": [
     "jellyfin",
@@ -3992,26 +3997,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-12h",
     "to": "now"
   },
-  "timepicker": {
-    "refresh_intervals": [
-      "5s",
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
-  },
+  "timepicker": {},
   "timezone": "browser",
   "title": "Jellyfin Media Server Telemetry",
   "uid": "jellyfin-media-server-telemetry",
-  "version": 1,
+  "version": 4,
   "weekStart": ""
 }
